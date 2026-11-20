@@ -13,6 +13,7 @@
     leaf: '#4f9a72', mint: '#8fd3b8', mintLt: '#d6f2e7', cream: '#f8f1e1',
     wood: '#7a5a3c', woodDk: '#5b412b', sand: '#c49a62'
   };
+  const T = (en, ur) => (window.MQ_LANG === 'ur' ? ur : en);
   const d = (s) => `style="--d:${s}s"`;
   const svg = (inner, vb = '0 0 320 300') =>
     `<svg class="svg" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${inner}</svg>`;
@@ -79,7 +80,7 @@
         n++;
         return `<span class="tile pop" ${d(0.25 + n * 0.16)}><b>${w}</b><i>${n.toLocaleString('ar-EG')}</i></span>`;
       }).join('')}</div>`).join('');
-      return `<div class="tiles">${html}<div class="pill fade" ${d(2.2)}>10 words · 3 verses</div></div>`;
+      return `<div class="tiles">${html}<div class="pill fade" ${d(2.2)}>${T('10 words · 3 verses', '۱۰ الفاظ · ۳ آیات')}</div></div>`;
     },
 
     prayermat: () => {
@@ -183,15 +184,15 @@
         <g transform="translate(0,130)">
           <g class="pop" data-step="1" ${d(0)}>${ring(58)}
             <path transform="translate(58,2)" d="M0,-26 C12,-10 19,0 19,8 A19,19 0 0 1 -19,8 C-19,0 -12,-10 0,-26Z" fill="#fff" stroke="#9cc9b9" stroke-width="2"/>
-            <text x="58" y="66" text-anchor="middle" class="lbl">milk</text></g>
+            <text x="58" y="66" text-anchor="middle" class="lbl">${T('milk', 'دودھ')}</text></g>
           <g class="pop" data-step="2" ${d(0)}>${ring(160)}
             <g transform="translate(160,6)"><rect x="-13" y="-10" width="26" height="30" rx="7" fill="#b07a3a"/><rect x="-6" y="-20" width="12" height="11" fill="#8a5c28"/><rect x="-8" y="-24" width="16" height="5" rx="2" fill="${G.goldDeep}"/></g>
             <g class="floaty" stroke="#b07a3a" stroke-width="1.8" fill="none" stroke-linecap="round"><path d="M152,-24 q-5,-6 0,-12 q5,-6 0,-12"/><path d="M162,-26 q-5,-6 0,-12 q5,-6 0,-12"/><path d="M172,-24 q-5,-6 0,-12 q5,-6 0,-12"/></g>
-            <text x="160" y="66" text-anchor="middle" class="lbl">musk</text></g>
+            <text x="160" y="66" text-anchor="middle" class="lbl">${T('musk', 'مشک')}</text></g>
           <g class="pop" data-step="3" ${d(0)}>${ring(262)}
             <g transform="translate(262,2)" stroke="${G.goldDeep}" stroke-width="2.6" fill="none" stroke-linecap="round"><path d="M-13,-10 H13 Q12,8 0,10 Q-12,8 -13,-10Z" fill="${G.mint}"/><path d="M0,10 V19 M-8,20 H8"/></g>
             ${spark(240, -22, 4, 0.2, G.goldDeep)}${spark(284, -18, 5, 0.8, G.goldDeep)}${spark(262, -30, 3, 1.3, G.goldDeep)}
-            <text x="262" y="66" text-anchor="middle" class="lbl">stars</text></g>
+            <text x="262" y="66" text-anchor="middle" class="lbl">${T('stars', 'ستارے')}</text></g>
         </g>
       `);
     },
@@ -247,7 +248,7 @@
         </g></g>
         ${pins.map(pin).join('')}
       `, '0 0 320 260')}
-      <div class="chips">${['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].map((p, i) => `<span class="chip lit" data-step="1" ${d(0.2 + i * 0.4)}>${p}</span>`).join('')}</div>`;
+      <div class="chips">${(window.MQ_LANG === 'ur' ? ['فجر', 'ظہر', 'عصر', 'مغرب', 'عشاء'] : ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']).map((p, i) => `<span class="chip lit" data-step="1" ${d(0.2 + i * 0.4)}>${p}</span>`).join('')}</div>`;
     },
 
     path: () => {
@@ -260,7 +261,7 @@
       return svg(`
         <path class="draw" ${d(0.1)} pathLength="1" d="${pp}" stroke="${G.mint}" stroke-width="18" fill="none" stroke-linecap="round" style="--dur:1.4s"/>
         <path class="fade" ${d(1.2)} d="${pp}" stroke="#fff" stroke-width="2.5" fill="none" stroke-dasharray="8 10" opacity=".8"/>
-        ${badge(58, 128, '١', 'gift', 1)}${badge(160, 150, '٢', 'command', 2)}${badge(262, 150, '٣', 'promise', 3)}
+        ${badge(58, 128, '١', T('gift', 'تحفہ'), 1)}${badge(160, 150, '٢', T('command', 'حکم'), 2)}${badge(262, 150, '٣', T('promise', 'وعدہ'), 3)}
       `);
     }
   };

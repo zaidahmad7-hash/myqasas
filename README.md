@@ -9,6 +9,9 @@ and a recitation card lights up each word of the ayah with Mishary Alafasy's rec
 - The ⚙︎ button on the home screen picks the voice and speed.
   For a warmer voice, download an *Enhanced* or *Premium* English voice on the iPhone
   (Settings → Accessibility → Spoken Content → Voices), then choose it in the app.
+- **English or Urdu:** pick the language on the story's cover or in ⚙︎. Urdu text uses Nastaliq script.
+  iPhones have no built-in Urdu voice, so the Hindi voice ("Lekha") reads the Urdu story from a Hindi-script copy
+  (`urSay` in `stories.js`). Spoken, it sounds the same. If the phone ever has an Urdu voice, the app uses it instead.
 - Recitation audio streams from everyayah.com, so it needs internet. Everything else works offline.
 
 ## Put it on your iPhone (one-time)
@@ -25,6 +28,7 @@ Stories live in `stories.js`. Each scene is one line of narration with one pictu
 { bg: 'night', art: 'moon', pos: 'bottom', lines: ['He dozed off for a *moment…*'] },
 ```
 
+- Add `ur: [...]` (Urdu lines) and `urSay: [...]` (the same lines in Hindi script, for the voice) to each scene.
 - `*word*` highlights a word, `^1` moves the picture on to its next step, `~` makes a small lead-in line.
 - Backgrounds: `night`, `deep`, `dusk`, `dawn`, `cream`, `sage`.
 - Pictures live in `art.js` (tiles, prayermat, masjid, moon, sunrise, scroll, ripple, river, trio, cup,

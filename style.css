@@ -4,6 +4,7 @@
 @font-face{font-family:Inter;src:url(fonts/inter-latin-500-normal.woff2) format("woff2");font-weight:500;font-display:swap}
 @font-face{font-family:Inter;src:url(fonts/inter-latin-600-normal.woff2) format("woff2");font-weight:600;font-display:swap}
 @font-face{font-family:AmiriQ;src:url(fonts/amiri-quran-arabic-400-normal.woff2) format("woff2");font-display:swap}
+@font-face{font-family:Nastaliq;src:url(fonts/noto-nastaliq-urdu-arabic-400-normal.woff2) format("woff2");font-display:swap}
 @font-face{font-family:AmiriT;src:url(fonts/amiri-arabic-400-normal.woff2) format("woff2");font-display:swap}
 
 :root{
@@ -12,6 +13,7 @@
   --text:#ece8e1; --muted:#8e8a83;
   --serif:Fraunces, Georgia, serif; --sans:Inter, -apple-system, system-ui, sans-serif;
   --ar:AmiriQ, AmiriT, "Geeza Pro", serif;
+  --ur:Nastaliq, "Noto Nastaliq Urdu", AmiriT, serif;
   --st: env(safe-area-inset-top, 0px); --sb: env(safe-area-inset-bottom, 0px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -260,3 +262,40 @@ select{width:100%;padding:11px 12px;border-radius:12px;background:#0f0f11;border
 .wide{width:100%;margin-top:14px}
 .tip{font-size:12.5px;line-height:1.5;color:var(--muted);margin:14px 0 0}
 .tip b{color:#c9c3b6}
+
+/* ───────── URDU ───────── */
+.stage.ur .scene .words{direction:rtl;text-align:right}
+.stage.ur .scene.pos-bottom .words{text-align:center}
+.stage.ur .line{font-family:var(--ur);font-style:normal;font-weight:400;font-size:clamp(21px,6.1vw,27px);line-height:2.15;letter-spacing:0;margin:0}
+.stage.ur .line.lead{font-family:var(--ur);font-size:clamp(15px,4.3vw,18px);line-height:2.1;margin:0 0 .1em}
+.stage.ur .line.big{font-size:clamp(40px,12vw,52px);line-height:2}
+.stage.ur .scene.pos-bottom .line{font-size:clamp(20px,5.8vw,26px)}
+.stage.ur .scene.pos-bottom .line.lead{font-size:clamp(15px,4.3vw,18px)}
+.stage.ur .scene.pos-bottom .line.big{font-size:clamp(40px,12vw,52px)}
+.stage.ur .w{transform:translateY(4px)}
+.stage.ur .w.on{transform:none}
+.stage.ur .w.acc{background:linear-gradient(transparent 66%,var(--hl) 66%) no-repeat 100% 0/0% 100%}
+.stage.ur .w.acc.on{background-size:100% 100%}
+.stage.ur .art .lbl{font-family:var(--ur);font-style:normal;font-weight:400;font-size:17px}
+.stage.ur .chip{font-family:var(--ur);font-weight:400;font-size:13.5px;padding:2px 11px 6px}
+.stage.ur .pill{font-family:var(--ur);letter-spacing:0;text-transform:none;font-size:14px;font-weight:400;padding:2px 14px 8px}
+.stage.ur .r-intro .line{font-size:clamp(32px,9vw,40px)}
+.stage.ur .r-en{font-family:var(--ur);font-style:normal;font-weight:400;font-size:clamp(18px,5.2vw,22px);line-height:2.1;direction:rtl}
+.stage.ur .r-vn,.stage.ur .r-foot,.stage.ur .r-label,.stage.ur .r-note{font-family:var(--ur);letter-spacing:0;text-transform:none;font-weight:400}
+.stage.ur .r-vn{font-size:13px;margin-top:4px}
+.stage.ur .r-foot{font-size:12.5px;bottom:16px}
+.stage.ur .r-label{font-size:13px;padding:1px 14px 6px;top:18px}
+.cover.ur .cover-meta{font-family:var(--ur);letter-spacing:0;text-transform:none;font-size:15px;font-weight:400}
+.cover.ur .cover-title{font-family:var(--ur);font-weight:400;font-size:34px;line-height:1.9;margin:0}
+.cover.ur .cover-tag{font-family:var(--ur);font-style:normal;font-weight:400;font-size:18px;line-height:2}
+.cover.ur #play-label,.cover.ur .cover-voice{font-family:var(--ur)}
+.cover-lang{width:200px;margin:18px auto 0;background:rgba(0,0,0,.25);border-color:rgba(227,194,122,.3)}
+.ur-btn{font-family:var(--ur)!important;font-size:15px!important;line-height:1.2}
+.endcard.ur .end-title,.endcard.ur .end-sources span,.endcard.ur .end-note,.endcard.ur .btn-gold,.endcard.ur .btn-line{font-family:var(--ur);font-style:normal;font-weight:400}
+.endcard.ur .end-sources{direction:rtl;text-align:right}
+.endcard.ur .end-sources b{font-family:var(--ur);font-weight:400;font-size:15px}
+.endcard.ur .end-sources span{font-size:15px;line-height:2}
+.endcard.ur .end-title{font-size:30px;line-height:1.8}
+.card .langs{font-size:11px;color:var(--muted);margin-top:4px}
+.vnote{display:block;font-size:12px;line-height:1.45;color:var(--muted);margin-top:8px}
+.stage.ur .chips,.stage.ur .pill{direction:rtl}

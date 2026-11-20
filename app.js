@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-//  MyQasas — app + story player
+//  MyQasas — app + story player (English / Urdu)
 // ─────────────────────────────────────────────────────────────
 (() => {
   const $ = (s) => document.querySelector(s);
@@ -9,31 +9,49 @@
   };
   const settings = {
     narrate: store.get('narrate', true),
-    voiceName: store.get('voice', ''),
+    lang: store.get('lang', 'en'),
+    voice: { en: store.get('voice_en', store.get('voice', '')), ur: store.get('voice_ur', '') },
     rate: store.get('rate', 1)
   };
   const SILENT = 'data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YUAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
   const LIGHT_BGS = ['cream', 'sage'];
+  const UR = () => settings.lang === 'ur';
+  const T = (en, ur) => (UR() ? ur : en);
+  const urNum = (n) => String(n).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
 
-  // ───────── narration voice ─────────
+  // ───────── narration voices ─────────
+  // English: the best English voice on the phone.
+  // Urdu: an Urdu voice if the phone has one (it then reads the Urdu text);
+  //       otherwise the Hindi voice reads the Devanagari version (urSay).
   const synth = window.speechSynthesis || null;
-  let voices = [];
+  let voices = { en: [], ur: [] };
   const NOVELTY = /Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Fred|Junior|Ralph|Kathy|Deranged|Hysterical|Pipe|Grandma|Grandpa|Eddy|Flo|Reed|Rocko|Sandy|Shelley/i;
   function loadVoices() {
     if (!synth) return;
-    voices = synth.getVoices().filter((v) => /^en([-_]|$)/i.test(v.lang) && !NOVELTY.test(v.name));
+    const all = synth.getVoices().filter((v) => !NOVELTY.test(v.name));
+    voices.en = all.filter((v) => /^en([-_]|$)/i.test(v.lang));
+    voices.ur = all.filter((v) => /^(ur|hi)([-_]|$)/i.test(v.lang));
     fillVoiceSelect();
   }
   function voiceScore(v) {
-    return (/premium/i.test(v.name) ? 8 : 0) + (/enhanced/i.test(v.name) ? 6 : 0) +
-      (/Daniel|Arthur|Serena|Martha|Oliver|Jamie|Stephanie/i.test(v.name) ? 3 : 0) +
-      (/Samantha|Google UK English|Moira|Karen|Tessa/i.test(v.name) ? 2 : 0) +
+    return (/^ur/i.test(v.lang) ? 20 : 0) +
+      (/premium/i.test(v.name) ? 8 : 0) + (/enhanced/i.test(v.name) ? 6 : 0) +
+      (/Daniel|Arthur|Serena|Martha|Oliver|Jamie|Stephanie|Lekha/i.test(v.name) ? 3 : 0) +
+      (/Samantha|Google UK English|Moira|Karen|Tessa|Google हिन्दी/i.test(v.name) ? 2 : 0) +
       (/en[-_]GB/i.test(v.lang) ? 1 : 0);
   }
-  function pickVoice() {
-    if (!voices.length) return null;
-    return voices.find((v) => v.name === settings.voiceName) ||
-      voices.slice().sort((a, b) => voiceScore(b) - voiceScore(a))[0];
+  function pickVoice(lang = settings.lang) {
+    const list = voices[lang];
+    if (!list.length) return null;
+    return list.find((v) => v.name === settings.voice[lang]) ||
+      list.slice().sort((a, b) => voiceScore(b) - voiceScore(a))[0];
+  }
+  // build an utterance in the current language
+  function utter(text, v) {
+    const u = new SpeechSynthesisUtterance(text);
+    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = UR() ? 'hi-IN' : 'en-GB';
+    u.rate = settings.rate * (UR() ? 0.92 : 1); u.pitch = 1;
+    return u;
   }
   if (synth) {
     loadVoices();
@@ -84,12 +102,12 @@
     return { cls: cls.trim(), tokens: out };
   }
   const saw = (t) => t.replace(/ﷺ/g, '<i class="saw">ﷺ</i>');
-  const sayOf = (w) => w === 'ﷺ' ? 'peace be upon him,' : (w === '—' ? ',' : w);
+  const sayOf = (w) => w === 'ﷺ' ? (UR() ? 'صلی اللہ علیہ وسلم،' : 'peace be upon him,') : (w === '—' ? ',' : w);
+  const letters = (t) => t.replace(/[\s.,:;!?…“”"'()\-—،۔؟]/g, '').length;
 
   // backgrounds cross-fade
   function setBg(bg) {
-    const light = LIGHT_BGS.includes(bg);
-    stage.classList.toggle('light', light);
+    stage.classList.toggle('light', LIGHT_BGS.includes(bg));
     const last = bgHost.lastElementChild;
     if (last && last.dataset.bg === bg) return;
     const l = document.createElement('div');
@@ -99,8 +117,7 @@
     setTimeout(() => { while (bgHost.children.length > 1 && bgHost.firstElementChild !== l) bgHost.firstElementChild.remove(); }, 1000);
   }
   function mountScene(el) {
-    const old = [...sceneHost.children];
-    old.forEach((o) => { o.classList.add('leave'); setTimeout(() => o.remove(), 460); });
+    [...sceneHost.children].forEach((o) => { o.classList.add('leave'); setTimeout(() => o.remove(), 460); });
     sceneHost.appendChild(el);
   }
 
@@ -123,12 +140,16 @@
     cur = i; setProgress(0);
     const sc = story.scenes[i];
     setBg(sc.bg);
+    stage.classList.toggle('ur', UR());
+    window.MQ_LANG = settings.lang;
     if (sc.type === 'recite') return recite(sc, opts.ayah || 0);
 
+    const urdu = UR() && sc.ur;
+    const lines = urdu ? sc.ur : sc.lines;
     const el = document.createElement('div');
     el.className = 'scene pos-' + (sc.pos || 'top');
     const words = document.createElement('div'); words.className = 'words';
-    sc.lines.forEach((line) => {
+    lines.forEach((line, li) => {
       const p = parseLine(line);
       const ln = document.createElement('div'); ln.className = 'line ' + p.cls;
       p.tokens.forEach((tok) => {
@@ -136,6 +157,7 @@
         s.className = 'w' + (tok.acc ? ' acc' : '') + (tok.text === 'ﷺ' ? ' saw' : '');
         s.textContent = tok.text;
         s.dataset.say = sayOf(tok.text);
+        s.dataset.line = li;
         if (tok.step) s.dataset.step = tok.step;
         ln.appendChild(s); ln.appendChild(document.createTextNode(' '));
       });
@@ -145,11 +167,11 @@
     art.innerHTML = (window.ART[sc.art] || (() => ''))();
     el.appendChild(words); el.appendChild(art);
     mountScene(el);
-    narrate(el, art);
+    narrate(el, art, urdu ? sc.urSay : null);
   }
 
   // reveal words in time with the voice (or a gentle timer when the voice is off)
-  function narrate(el, art) {
+  function narrate(el, art, sayLines) {
     const id = run;
     const words = [...el.querySelectorAll('.w')];
     let shown = 0, spoken = false, finished = false, boundary = false;
@@ -175,51 +197,63 @@
     const rate = settings.rate;
     const pace = (w) => {
       const t = w.dataset.say;
-      let ms = (120 + t.replace(/[^A-Za-z]/g, '').length * 55) / rate;
-      if (/[.!?…”]$/.test(t)) ms += 320 / rate; else if (/[,:;—]$/.test(t)) ms += 180 / rate;
+      let ms = (130 + letters(t) * (UR() ? 62 : 55)) / rate;
+      if (/[.!?…”“۔؟]$/.test(t)) ms += 320 / rate; else if (/[,:;—،]$/.test(t)) ms += 180 / rate;
       return ms;
     };
     let t = 450; const sched = words.map((w) => { const s = t; t += pace(w); return s; });
     sched.forEach((s, i) => later(() => { if (!boundary) show(i); }, s));
 
-    const v = settings.narrate && synth ? pickVoice() : null;
-    if (settings.narrate && synth) {
+    if (!(settings.narrate && synth)) { spoken = true; return; }
+    const v = pickVoice();
+    let text, starts;
+    if (!sayLines || (v && /^ur/i.test(v.lang))) {
+      // the voice reads exactly the words on screen
       let pos = 0;
-      const starts = words.map((w) => { const s = pos; pos += w.dataset.say.length + 1; return s; });
-      const u = new SpeechSynthesisUtterance(words.map((w) => w.dataset.say).join(' '));
-      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
-      u.rate = rate; u.pitch = 1;
-      u.onboundary = (e) => {
-        if (id !== run || (e.name && e.name !== 'word')) return;
-        boundary = true;
-        let k = 0; while (k + 1 < starts.length && starts[k + 1] <= e.charIndex) k++;
-        show(k);
-      };
-      u.onend = () => { if (id !== run) return; spoken = true; show(words.length - 1); };
-      u.onerror = () => { if (id !== run) return; spoken = true; check(); };
-      synth.speak(u);
-      later(() => { if (id === run && !spoken) { spoken = true; show(words.length - 1); } }, t * 2 + 5000);
+      starts = words.map((w) => { const s = pos; pos += w.dataset.say.length + 1; return s; });
+      text = words.map((w) => w.dataset.say).join(' ');
     } else {
-      spoken = true;
+      // the Hindi voice reads the Devanagari line; spread each line over its words
+      starts = []; let pos = 0;
+      sayLines.forEach((lt, li) => {
+        const lw = words.filter((w) => +w.dataset.line === li);
+        const tot = lw.reduce((a, w) => a + letters(w.textContent) + 1, 0) || 1;
+        let cum = 0;
+        lw.forEach((w) => { starts.push(pos + Math.floor((cum / tot) * lt.length)); cum += letters(w.textContent) + 1; });
+        pos += lt.length + 1;
+      });
+      text = sayLines.join(' ');
     }
+    const u = utter(text, v);
+    u.onboundary = (e) => {
+      if (id !== run || (e.name && e.name !== 'word')) return;
+      boundary = true;
+      let k = 0; while (k + 1 < starts.length && starts[k + 1] <= e.charIndex) k++;
+      show(k);
+    };
+    u.onend = () => { if (id !== run) return; spoken = true; show(words.length - 1); };
+    u.onerror = () => { if (id !== run) return; spoken = true; check(); };
+    synth.speak(u);
+    later(() => { if (id === run && !spoken) { spoken = true; show(words.length - 1); } }, t * 2 + 5000);
   }
 
   // ───────── recitation scene ─────────
   function recite(sc, startAyah) {
     const id = run;
+    const urdu = UR();
     const el = document.createElement('div');
     el.className = 'recite';
     el.innerHTML = `
       <div class="r-intro"><div class="line"></div></div>
       <div class="r-card">
         <span class="c c1">✦</span><span class="c c2">✦</span><span class="c c3">✦</span><span class="c c4">✦</span>
-        <div class="r-label">${sc.surahLabel}</div>
+        <div class="r-label">${urdu ? sc.urSurahLabel : sc.surahLabel}</div>
         <div class="r-body"><div class="r-ar"></div><div class="r-div"></div><div class="r-en"></div><div class="r-vn"></div></div>
         <div class="r-note"></div>
-        <div class="r-foot">Recitation · ${sc.reciter}</div>
+        <div class="r-foot">${urdu ? 'تلاوت · ' + sc.urReciter : 'Recitation · ' + sc.reciter}</div>
       </div>`;
     const introLine = el.querySelector('.r-intro .line');
-    parseLine(sc.intro).tokens.forEach((tok) => {
+    parseLine(urdu ? sc.urIntro : sc.intro).tokens.forEach((tok) => {
       const s = document.createElement('span'); s.className = 'w' + (tok.acc ? ' acc' : ''); s.textContent = tok.text;
       introLine.appendChild(s); introLine.appendChild(document.createTextNode(' '));
     });
@@ -233,9 +267,9 @@
     if (startAyah === 0) {
       [...introLine.children].forEach((w, i) => later(() => w.classList.add('on'), 200 + i * 260));
       if (settings.narrate && synth) {
-        const u = new SpeechSynthesisUtterance(sc.intro.replace(/\*/g, ''));
-        const v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; }
-        u.rate = settings.rate; synth.speak(u);
+        const v = pickVoice();
+        const txt = urdu ? ((v && /^ur/i.test(v.lang)) ? sc.urIntro.replace(/\*/g, '') : sc.urIntroSay) : sc.intro.replace(/\*/g, '');
+        synth.speak(utter(txt, v));
       }
       later(() => { el.classList.add('carded'); later(() => playAyah(0, true), 700); }, 2100);
     } else {
@@ -248,8 +282,8 @@
       const a = sc.ayahs[k];
       const fill = () => {
         el.querySelector('.r-ar').innerHTML = a.ar.map((w) => `<span class="aw">${w}</span>`).join(' ');
-        el.querySelector('.r-en').innerHTML = a.en.split(' ').map((w) => `<span class="nw">${w}</span>`).join(' ');
-        el.querySelector('.r-vn').textContent = `Verse ${a.n} · Meaning`;
+        el.querySelector('.r-en').innerHTML = (urdu ? a.ur : a.en).split(' ').map((w) => `<span class="nw">${w}</span>`).join(' ');
+        el.querySelector('.r-vn').textContent = urdu ? `آیت ${urNum(a.n)} · ترجمہ` : `Verse ${a.n} · Meaning`;
         body.classList.remove('swap');
       };
       if (first) fill(); else { body.classList.add('swap'); later(fill, 450); }
@@ -275,7 +309,7 @@
       const fallback = () => {
         if (fellBack || ended || id !== run) return; fellBack = true; audioDead = true;
         try { audio.pause(); } catch (e) {}
-        el.querySelector('.r-note').textContent = 'Recitation plays when you’re online';
+        el.querySelector('.r-note').textContent = urdu ? 'تلاوت انٹرنیٹ سے چلتی ہے' : 'Recitation plays when you’re online';
         ws.forEach((w, i) => later(() => { if (id === run) w.classList.add('on'); }, 400 + i * 750));
         later(finishAyah, 400 + ws.length * 750 + 900);
       };
@@ -303,7 +337,6 @@
       if (p && p.catch) p.catch(fallback);
       requestAnimationFrame(tick);
       later(() => { if (!started) fallback(); }, 7000);
-      // preload the next ayah's file in the browser cache
       if (k + 1 < len) { try { fetch(sc.audio(sc.ayahs[k + 1].n), { mode: 'no-cors' }).catch(() => {}); } catch (e) {} }
     }
   }
@@ -329,20 +362,27 @@
   document.addEventListener('visibilitychange', () => { if (document.hidden && inPlay()) pause(); });
 
   // ───────── open / close a story ─────────
+  function fillCover() {
+    if (!story) return;
+    $('#hud-title').textContent = story.title;
+    $('#cover-ar').textContent = story.ar;
+    $('#cover-meta').textContent = T(story.meta, story.urMeta || story.meta) || '';
+    $('#cover-title').textContent = T(story.title, story.urTitle || story.title);
+    $('#cover-tag').textContent = T(story.tagline, story.urTagline || story.tagline);
+    $('#play-label').textContent = T('Play story', 'کہانی چلائیں');
+    $('#cover').classList.toggle('ur', UR());
+    document.querySelectorAll('.lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === settings.lang));
+    updateVoiceUI();
+  }
   function openStory(id) {
     story = window.STORIES.find((s) => s.id === id);
     if (!story) return;
     stopAll(); sceneHost.innerHTML = ''; bgHost.innerHTML = '';
     setBg('deep'); buildBars(); cur = 0; setProgress(0);
-    $('#hud-title').textContent = story.title;
-    $('#cover-ar').textContent = story.ar;
-    $('#cover-meta').textContent = story.meta || '';
-    $('#cover-title').textContent = story.title;
-    $('#cover-tag').textContent = story.tagline;
+    fillCover();
     $('#cover').classList.remove('hide');
     $('#endcard').classList.add('hide');
     stage.classList.remove('is-paused'); paused = false;
-    updateVoiceUI();
     show('player');
   }
   function closeStory() {
@@ -360,7 +400,13 @@
     stopAll();
     setProgress(1);
     store.set('done_' + story.id, true);
-    $('#end-sources').innerHTML = (story.sources || []).map(([a, b]) => `<li><b>${saw(a)}</b><span>${saw(b)}</span></li>`).join('');
+    const src = UR() && story.urSources ? story.urSources : (story.sources || []);
+    $('#end-sources').innerHTML = src.map(([a, b]) => `<li><b>${saw(a)}</b><span>${saw(b)}</span></li>`).join('');
+    $('#end-title').textContent = T('Sources', 'حوالہ جات');
+    $('#end-note').textContent = T('Please check stories with a trusted teacher before sharing.', 'براہِ کرم شیئر کرنے سے پہلے کسی معتبر عالم سے تصدیق کر لیں۔');
+    $('#btn-replay').textContent = T('Play again', 'دوبارہ چلائیں');
+    $('#btn-back').textContent = T('All stories', 'تمام کہانیاں');
+    $('#endcard').classList.toggle('ur', UR());
     $('#endcard').classList.remove('hide');
   }
   $('#btn-play').addEventListener('click', startStory);
@@ -368,12 +414,23 @@
   $('#btn-back').addEventListener('click', closeStory);
   $('#btn-close').addEventListener('click', closeStory);
 
+  // language switch (cover + settings)
+  function setLang(l) {
+    settings.lang = l; store.set('lang', l);
+    fillCover(); fillVoiceSelect();
+    document.querySelectorAll('.lang-seg button').forEach((b) => b.classList.toggle('on', b.dataset.lang === l));
+  }
+  document.querySelectorAll('.lang-seg').forEach((seg) => seg.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (b) setLang(b.dataset.lang);
+  }));
+
   // narration on/off inside the player
   const ICON_ON = '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
   const ICON_OFF = '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
   function updateVoiceUI() {
     $('#btn-voice').innerHTML = settings.narrate ? ICON_ON : ICON_OFF;
-    $('#cover-voice').innerHTML = `Narration: <b>${settings.narrate ? 'On' : 'Off'}</b>`;
+    $('#cover-voice').innerHTML = T(`Narration: <b>${settings.narrate ? 'On' : 'Off'}</b>`,
+      `آواز: <b>${settings.narrate ? 'آن' : 'آف'}</b>`);
     $('#set-narrate').checked = settings.narrate;
   }
   function toggleNarrate() {
@@ -403,6 +460,7 @@
             <div class="meta">${s.meta || (s.num ? 'Surah ' + s.num : '')}</div>
             <div class="title">${s.title}</div>
             <div class="tag">${s.tagline}</div>
+            ${!s.soon && s.urTagline ? '<div class="langs">English · اردو</div>' : ''}
             ${!s.soon && store.get('done_' + s.id, false) ? '<div class="done">✓ Watched</div>' : ''}
           </div>
           <div class="go">${s.soon ? 'Soon' : '<svg viewBox="0 0 24 24" width="17" height="17"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>'}</div>
@@ -420,20 +478,28 @@
   function fillVoiceSelect() {
     const sel = $('#set-voice');
     if (!sel) return;
-    const best = pickVoice();
+    const lang = settings.lang;
+    const list = voices[lang];
+    const best = pickVoice(lang);
+    $('#voice-label').textContent = lang === 'ur' ? 'Urdu voice' : 'English voice';
+    $('#voice-note').textContent = lang === 'ur'
+      ? (best ? (/^ur/i.test(best.lang) ? 'Using an Urdu voice.' : 'No Urdu voice on this phone, so the Hindi voice reads the Urdu story (it sounds the same when spoken).') : 'No Urdu or Hindi voice found. Add the Hindi voice "Lekha" in iPhone Settings → Accessibility → Spoken Content → Voices → Hindi.')
+      : '';
     sel.innerHTML = `<option value="">Automatic${best ? ' (' + best.name + ')' : ''}</option>` +
-      voices.slice().sort((a, b) => voiceScore(b) - voiceScore(a) || a.name.localeCompare(b.name))
+      list.slice().sort((a, b) => voiceScore(b) - voiceScore(a) || a.name.localeCompare(b.name))
         .map((v) => `<option value="${v.name}">${v.name} · ${v.lang}</option>`).join('');
-    sel.value = voices.some((v) => v.name === settings.voiceName) ? settings.voiceName : '';
+    sel.value = list.some((v) => v.name === settings.voice[lang]) ? settings.voice[lang] : '';
   }
   function markRate() {
     document.querySelectorAll('#set-rate button').forEach((b) => b.classList.toggle('on', +b.dataset.r === settings.rate));
   }
-  $('#btn-settings').addEventListener('click', () => { loadVoices(); updateVoiceUI(); markRate(); $('#sheet').classList.add('open'); });
+  $('#btn-settings').addEventListener('click', () => { loadVoices(); fillVoiceSelect(); updateVoiceUI(); markRate(); setLang(settings.lang); $('#sheet').classList.add('open'); });
   $('#btn-sheet-done').addEventListener('click', () => $('#sheet').classList.remove('open'));
   $('#sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') $('#sheet').classList.remove('open'); });
   $('#set-narrate').addEventListener('change', (e) => { settings.narrate = e.target.checked; store.set('narrate', settings.narrate); updateVoiceUI(); });
-  $('#set-voice').addEventListener('change', (e) => { settings.voiceName = e.target.value; store.set('voice', settings.voiceName); fillVoiceSelect(); });
+  $('#set-voice').addEventListener('change', (e) => {
+    settings.voice[settings.lang] = e.target.value; store.set('voice_' + settings.lang, e.target.value); fillVoiceSelect();
+  });
   $('#set-rate').addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
     settings.rate = +b.dataset.r; store.set('rate', settings.rate); markRate();
@@ -441,9 +507,11 @@
   $('#btn-test').addEventListener('click', () => {
     if (!synth) return alert('This browser has no built-in voice.');
     synth.cancel();
-    const u = new SpeechSynthesisUtterance('One day in Madinah, the Prophet, peace be upon him, was sitting with his companions in the masjid.');
-    const v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; }
-    u.rate = settings.rate; synth.speak(u);
+    const v = pickVoice();
+    const txt = !UR() ? 'One day in Madinah, the Prophet, peace be upon him, was sitting with his companions in the masjid.'
+      : (v && /^ur/i.test(v.lang)) ? 'ایک دن مدینہ میں، نبی کریم صلی اللہ علیہ وسلم مسجد میں اپنے صحابہ کے ساتھ تشریف فرما تھے۔'
+      : 'एक दिन मदीना में, नबी-ए-करीम, सल्लल्लाहु अलैहि वसल्लम, मस्जिद में अपने सहाबा के साथ तशरीफ़ फ़रमा थे।';
+    synth.speak(utter(txt, v));
   });
 
   // ───────── start ─────────
@@ -453,5 +521,5 @@
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
   }
   // test hook
-  window.MQ = { openStory, startStory, playScene, pause, next, freeze: stopAll, get cur() { return cur; } };
+  window.MQ = { openStory, startStory, playScene, pause, next, setLang, freeze: stopAll, get cur() { return cur; } };
 })();

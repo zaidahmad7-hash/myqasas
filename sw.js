@@ -1,13 +1,13 @@
 // Offline support.
 // App files: network first (so updates show straight away), saved copy when offline.
 // Recitation audio and fonts: saved copy first.
-const CACHE = 'myqasas-v1';
+const CACHE = 'myqasas-v2';
 const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'art.js', 'stories.js',
   'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-512.png',
   'fonts/fraunces-latin-600-italic.woff2', 'fonts/fraunces-latin-700-italic.woff2',
   'fonts/fraunces-latin-700-normal.woff2', 'fonts/inter-latin-500-normal.woff2',
   'fonts/inter-latin-600-normal.woff2', 'fonts/amiri-quran-arabic-400-normal.woff2',
-  'fonts/amiri-arabic-400-normal.woff2'];
+  'fonts/amiri-arabic-400-normal.woff2', 'fonts/noto-nastaliq-urdu-arabic-400-normal.woff2'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE)
