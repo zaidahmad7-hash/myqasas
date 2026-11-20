@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MyQasas">
+<meta name="theme-color" content="#0b0b0c">
+<title>MyQasas</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ───────── HOME ───────── -->
+  <section id="view-lib" class="view active">
+    <div class="lib">
+      <header class="lib-head">
+        <h1>My<span>Qasas</span></h1>
+        <button id="btn-settings" class="icon-btn" aria-label="Settings">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+        </button>
+      </header>
+      <div class="lib-verse">
+        <div class="ar">نَحْنُ نَقُصُّ عَلَيْكَ أَحْسَنَ ٱلْقَصَصِ</div>
+        <div class="en">“We relate to you the best of stories.”</div>
+        <div class="ref">Yusuf 12:3</div>
+      </div>
+      <div id="lib-list"></div>
+    </div>
+  </section>
+
+  <!-- ───────── PLAYER ───────── -->
+  <section id="view-player" class="view">
+    <div id="stage" class="stage">
+      <div id="bg-host"></div>
+      <div class="pattern"></div>
+      <div id="scene-host"></div>
+
+      <div class="taps">
+        <div id="tap-prev"></div><div id="tap-mid"></div><div id="tap-next"></div>
+      </div>
+
+      <div class="hud">
+        <div id="bars" class="bars"></div>
+        <div class="hud-row">
+          <button id="btn-close" class="icon-btn" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <div id="hud-title" class="hud-title"></div>
+          <button id="btn-voice" class="icon-btn" aria-label="Narration on or off"></button>
+        </div>
+      </div>
+
+      <div id="paused" class="paused" aria-hidden="true">
+        <div class="paused-btn"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></div>
+        <div class="paused-hint">Tap left or right to move between scenes</div>
+      </div>
+
+      <!-- cover -->
+      <div id="cover" class="cover">
+        <div class="cover-in">
+          <div class="cover-frame">
+            <span class="c c1">✦</span><span class="c c2">✦</span><span class="c c3">✦</span><span class="c c4">✦</span>
+            <div id="cover-ar" class="cover-ar"></div>
+          </div>
+          <div id="cover-meta" class="cover-meta"></div>
+          <div id="cover-title" class="cover-title"></div>
+          <div id="cover-tag" class="cover-tag"></div>
+          <button id="btn-play" class="btn-gold">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+            Play story
+          </button>
+          <button id="cover-voice" class="cover-voice"></button>
+        </div>
+      </div>
+
+      <!-- end -->
+      <div id="endcard" class="endcard">
+        <div class="end-in">
+          <div class="end-star">✦</div>
+          <div class="end-title">Sources</div>
+          <ul id="end-sources" class="end-sources"></ul>
+          <p class="end-note">Please check stories with a trusted teacher before sharing.</p>
+          <div class="end-btns">
+            <button id="btn-replay" class="btn-gold">Play again</button>
+            <button id="btn-back" class="btn-line">All stories</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── SETTINGS ───────── -->
+  <div id="sheet" class="sheet" aria-hidden="true">
+    <div class="sheet-card">
+      <div class="sheet-grab"></div>
+      <h3>Narration</h3>
+      <label class="row"><span>Read the story aloud</span><input id="set-narrate" type="checkbox" class="switch"></label>
+      <div class="row col"><span>Voice</span><select id="set-voice"></select></div>
+      <div class="row col"><span>Speed</span>
+        <div class="seg" id="set-rate">
+          <button data-r="0.85">Slow</button><button data-r="1">Normal</button><button data-r="1.12">Fast</button>
+        </div>
+      </div>
+      <button id="btn-test" class="btn-line wide">Test voice</button>
+      <p class="tip">Tip: for a warmer voice, download an <b>Enhanced</b> or <b>Premium</b> English voice on your iPhone (Settings → Accessibility → Spoken Content → Voices), then pick it here.</p>
+      <button id="btn-sheet-done" class="btn-gold wide">Done</button>
+    </div>
+  </div>
+
+</div>
+<script src="art.js"></script>
+<script src="stories.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
